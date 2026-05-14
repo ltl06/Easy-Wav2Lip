@@ -1,0 +1,83 @@
+# ================================
+# Python
+# ================================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+*.log
+.installed.txt
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# ================================
+# Model checkpoints (download separately)
+# ================================
+checkpoints/
+*.pth
+*.pkl
+*.dat
+*.pt
+*.onnx
+
+# ================================
+# GFPGAN
+# ================================
+gfpgan/*.pth
+gfpgan/*.pkl
+gfpgan/models/
+
+# ================================
+# Models
+# ================================
+models/
+
+# ================================
+# Output files
+# ================================
+output/
+temp/
+*.mp4
+*.avi
+*.mov
+*.mkv
+*.wav
+*.mp3
+*.jpg
+*.jpeg
+*.png
+
+# ================================
+# Jupyter Notebooks (may contain secrets)
+# ================================
+*.ipynb
+.ipynb_checkpoints/
+
+# ================================
+# Cached / temporary
+# ================================
+*.pkl
+last_detected_face.pkl
+last_file.txt
+.installed.txt
+
+# ================================
+# IDE
+# ================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db

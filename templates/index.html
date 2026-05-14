@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数字人视角切换系统</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>数字人视角切换系统</h1>
+            <p class="subtitle">基于 Easy-Wav2Lip 的 AI 数字人视频生成</p>
+        </header>
+
+        <main>
+            <!-- Upload Section -->
+            <section class="card upload-section">
+                <h2>上传素材</h2>
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+                        </svg>
+                    </div>
+                    <p>拖拽视频或图片到这里，或点击选择文件</p>
+                    <span class="upload-hint">支持 MP4, AVI, MOV, MKV, JPG, PNG</span>
+                    <input type="file" id="sourceInput" accept="video/*,image/*" hidden>
+                </div>
+                <div class="file-info" id="sourceInfo" style="display:none;">
+                    <span class="file-name" id="sourceName"></span>
+                    <span class="file-type" id="sourceType"></span>
+                    <button class="btn-icon" onclick="clearSource()" title="移除">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="file-preview" id="sourcePreview" style="display:none;"></div>
+
+                <div class="upload-area" id="audioUploadArea">
+                    <div class="upload-icon small">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>
+                        </svg>
+                    </div>
+                    <p>上传音频（可选）</p>
+                    <span class="upload-hint">支持 MP3, WAV, OGG, M4A</span>
+                    <input type="file" id="audioInput" accept="audio/*" hidden>
+                </div>
+                <div class="file-info" id="audioInfo" style="display:none;">
+                    <span class="file-name" id="audioName"></span>
+                    <span class="file-type" id="audioType"></span>
+                    <button class="btn-icon" onclick="clearAudio()" title="移除">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
+                    </button>
+                </div>
+            </section>
+
+            <!-- View/Expression Control -->
+            <section class="card control-section">
+                <h2>视角与表情控制</h2>
+                <div class="params-grid">
+                    <div class="param-group">
+                        <label>头部左右旋转 (Yaw)</label>
+                        <input type="range" id="headRotationY" min="-1" max="1" step="0.05" value="0">
+                        <span class="param-value" id="headRotationYVal">0.00</span>
+                    </div>
+                    <div class="param-group">
+                        <label>头部上下倾斜 (Pitch)</label>
+                        <input type="range" id="headRotationX" min="-1" max="1" step="0.05" value="0">
+                        <span class="param-value" id="headRotationXVal">0.00</span>
+                    </div>
+                    <div class="param-group">
+                        <label>头部侧倾 (Roll)</label>
+                        <input type="range" id="headRotationZ" min="-1" max="1" step="0.05" value="0">
+                        <span class="param-value" id="headRotationZVal">0.00</span>
+                    </div>
+                    <div class="param-group">
+                        <label>表情强度</label>
+                        <input type="range" id="expressionStrength" min="0" max="1" step="0.05" value="0.5">
+                        <span class="param-value" id="expressionStrengthVal">0.50</span>
+                    </div>
+                    <div class="param-group">
+                        <label>眨眼频率</label>
+                        <input type="range" id="blinkFrequency" min="0" max="1" step="0.05" value="0.5">
+                        <span class="param-value" id="blinkFrequencyVal">0.50</span>
+                    </div>
+                    <div class="param-group">
+                        <label>视角动画</label>
+                        <select id="viewAnimation">
+                            <option value="static">静止</option>
+                            <option value="gentle_sway">轻微摇摆</option>
+                            <option value="nodding">点头</option>
+                            <option value="look_around">环顾四周</option>
+                        </select>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Quality Settings -->
+            <section class="card quality-section">
+                <h2>输出质量</h2>
+                <div class="quality-options">
+                    <label class="quality-radio">
+                        <input type="radio" name="quality" value="Fast">
+                        <span class="quality-label">快速</span>
+                    </label>
+                    <label class="quality-radio">
+                        <input type="radio" name="quality" value="Improved">
+                        <span class="quality-label">标准</span>
+                    </label>
+                    <label class="quality-radio" checked>
+                        <input type="radio" name="quality" value="Enhanced" checked>
+                        <span class="quality-label">高清</span>
+                    </label>
+                    <label class="quality-radio">
+                        <input type="radio" name="quality" value="Experimental">
+                        <span class="quality-label">实验</span>
+                    </label>
+                </div>
+                <div class="quality-grid">
+                    <div class="param-group">
+                        <label>输出高度</label>
+                        <select id="outputHeight">
+                            <option value="360">360p</option>
+                            <option value="480">480p</option>
+                            <option value="720" selected>720p</option>
+                            <option value="1080">1080p</option>
+                        </select>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Action Buttons -->
+            <section class="action-section">
+                <button class="btn btn-secondary" id="quickPreviewBtn" onclick="quickPreview()" disabled>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="5 3 19 12 5 21 5 3"/>
+                    </svg>
+                    快速预览
+                </button>
+                <button class="btn btn-primary" id="processBtn" onclick="startProcess()" disabled>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+                    </svg>
+                    开始生成
+                </button>
+            </section>
+
+            <!-- Progress -->
+            <section class="card progress-section" id="progressSection" style="display:none;">
+                <h2>处理进度</h2>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+                <div class="progress-info">
+                    <span class="progress-text" id="progressText">准备中...</span>
+                    <span class="progress-percent" id="progressPercent">0%</span>
+                </div>
+                <div class="progress-steps" id="progressSteps">
+                    <div class="step" id="step-upload">上传</div>
+                    <div class="step-arrow">\u2192</div>
+                    <div class="step" id="step-face">人脸检测</div>
+                    <div class="step-arrow">\u2192</div>
+                    <div class="step" id="step-expression">表情生成</div>
+                    <div class="step-arrow">\u2192</div>
+                    <div class="step" id="step-lip">唇形同步</div>
+                    <div class="step-arrow">\u2192</div>
+                    <div class="step" id="step-encode">编码输出</div>
+                </div>
+            </section>
+
+            <!-- Result -->
+            <section class="card result-section" id="resultSection" style="display:none;">
+                <h2>生成完成</h2>
+                <div class="result-preview" id="resultPreview"></div>
+                <div class="result-actions">
+                    <button class="btn btn-secondary" onclick="downloadResult()">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+                        </svg>
+                        下载视频
+                    </button>
+                    <button class="btn btn-secondary" onclick="resetProcess()">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/>
+                        </svg>
+                        重新开始
+                    </button>
+                </div>
+            </section>
+
+            <!-- Analytics Dashboard -->
+            <section class="card analytics-section" id="analyticsSection">
+                <h2>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/>
+                        <line x1="6" y1="20" x2="6" y2="14"/>
+                    </svg>
+                    数据分析
+                </h2>
+                <div class="analytics-controls">
+                    <label>统计周期: </label>
+                    <select id="analyticsDays" onchange="loadAnalytics()">
+                        <option value="7">最近7天</option>
+                        <option value="14">最近14天</option>
+                        <option value="30">最近30天</option>
+                    </select>
+                    <button class="btn btn-secondary btn-sm" onclick="loadAnalytics()">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                        </svg>
+                        刷新
+                    </button>
+                </div>
+
+                <!-- Summary Cards -->
+                <div class="analytics-stats" id="analyticsStats">
+                    <div class="stat-card">
+                        <div class="stat-value" id="statTotalJobs">--</div>
+                        <div class="stat-label">总任务数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="statCompleted">--</div>
+                        <div class="stat-label">成功</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="statFailed">--</div>
+                        <div class="stat-label">失败</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="statFrames">--</div>
+                        <div class="stat-label">处理帧数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="statDuration">--</div>
+                        <div class="stat-label">总耗时</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="statSuccessRate">--</div>
+                        <div class="stat-label">成功率</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="statCpu">--</div>
+                        <div class="stat-label">平均CPU</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="statGpu">--</div>
+                        <div class="stat-label">平均GPU</div>
+                    </div>
+                </div>
+
+                <!-- Daily Chart -->
+                <div class="analytics-chart">
+                    <h3>每日任务量</h3>
+                    <div class="chart-container" id="dailyChart"></div>
+                </div>
+
+                <!-- Step Timing -->
+                <div class="analytics-breakdown">
+                    <h3>各阶段耗时</h3>
+                    <div class="step-timings" id="stepTimings"></div>
+                </div>
+
+                <!-- Quality Breakdown -->
+                <div class="analytics-breakdown">
+                    <h3>质量设置分布</h3>
+                    <div class="quality-breakdown" id="qualityBreakdown"></div>
+                </div>
+
+                <!-- Recent Jobs -->
+                <div class="analytics-breakdown">
+                    <h3>最近任务</h3>
+                    <div class="recent-jobs" id="recentJobs"></div>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>Powered by Wav2Lip + LivePortrait</p>
+        </footer>
+    </div>
+
+    <script src="/static/js/main.js"></script>
+</body>
+</html>
