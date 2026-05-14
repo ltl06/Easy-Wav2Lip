@@ -1,187 +1,275 @@
-## Easy-Wav2Lip improves Wav2Lip video lipsyncing making it:
+# Easy-Wav2Lip（中文使用指南）
 
-## Easier:
-* Simple setup and execution - locally and via colab.
-     * no messing around manually downloading and installing prerequesits
-     * Google Colab has only 2 cells to execute
-     * Windows users only need one file to install, update and run.
-* Well documented options below.
-     * No more wondering what anything does!
+基于 Wav2Lip 的 AI 唇形同步工具，支持表情控制和数据分析功能，大幅优化了原版 Wav2Lip 的速度和画质。
 
-## Faster:
-For my 9 second 720p 60fps test clip via Colab T4:
-| Original Wav2Lip | Easy-Wav2Lip |
-|:-------|:-----|
-| Execution time: 6m 53s | Execution time: 56s |
+## 核心优势
 
-That's not a typo! My clip goes from almost 7 minutes to under 1 minute!
+### 更快
 
-The tracking data is saved between generations of the same video, saving even more time:
-| Easy-Wav2Lip on the same video again |
-|:-----|
-| Execution time: 25s |
+| 版本 | 9秒 720p 60fps 测试耗时 |
+|------|----------------------|
+| 原版 Wav2Lip | 6 分 53 秒 |
+| Easy-Wav2Lip | **56 秒** |
+| 重复运行同一视频（复用缓存） | **25 秒** |
 
-## Better looking:
+### 更好看
 
-Easy-Wav2Lip fixes visual bugs on the lips:
+- 修复了原版 Wav2Lip 的唇部视觉瑕疵
+- 三档质量可选：Fast / Improved / Enhanced
+- Enhanced 模式使用 GFPGAN 进行人脸增强和超分辨率
 
-[![Comparison gif](https://github.com/anothermartz/Easy-Wav2Lip/releases/download/Prerequesits/wav2lipcomparison.gif)](https://github.com/anothermartz/Easy-Wav2Lip/releases/download/Prerequesits/wav2lipcomparison.gif)
+## 目录结构
 
-3 Options for Quality:
-* Fast: Wav2Lip
-* Improved: Wav2Lip with a feathered mask around the mouth to restore the original resolution for the rest of the face
-* Enhanced: Wav2Lip + mask + GFPGAN upscaling done on the face
+```
+Easy-Wav2Lip/
+├── inference.py              # 核心推理脚本
+├── pipeline.py               # 处理流水线
+├── run.py                    # 主运行脚本
+├── app.py                    # Web 应用入口
+├── analytics.py              # 分析统计
+├── expression_control.py     # 表情控制
+├── config.ini                # 配置文件
+├── requirements.txt          # Python 依赖
+├── checkpoints/              # 模型权重（需下载）
+├── gfpgan/                   # GFPGAN 人脸增强
+├── models/                   # 其他模型文件
+├── static/                   # 静态资源
+└── templates/                # Web 模板
+```
 
-[![Comparison gif](https://github.com/anothermartz/Easy-Wav2Lip/releases/download/Prerequesits/JPComparison.gif)](https://github.com/anothermartz/Easy-Wav2Lip/releases/download/Prerequesits/JPComparison.gif)
+## 环境要求
 
+- **GPU**: NVIDIA GPU（推荐 RTX 3060 以上）
+- **系统**: Windows 10/11 64位 / Linux
+- **依赖**: Python 3.10.11（推荐）、Git、FFmpeg、CUDA 12+
 
-# Installation:
+## 安装方式
 
-### For the easiest and most compatible way to use this tool, use the Google Colab version:
+### 方式一：Windows 一键安装（推荐）
 
-### Google Colab:
-[https://colab.research.google.com/github/anothermartz/Easy-Wav2Lip/blob/v8.1/Easy_Wav2Lip_v8.1.ipynb](https://colab.research.google.com/github/anothermartz/Easy-Wav2Lip/blob/v8.1/Easy_Wav2Lip_v8.1.ipynb)
+1. 下载 [Easy-Wav2Lip.bat](https://github.com/anothermartz/Easy-Wav2Lip/releases/download/v8.1_release/Easy-Wav2Lip_v8.1.bat)
+2. 将 `.bat` 文件放入一个独立文件夹
+3. 双击运行，按提示完成环境配置
+4. 自动检查更新并运行
+
+> 注意：确保 NVIDIA 驱动为最新版本，以支持 CUDA 12。
+
+### 方式二：Google Colab（最快）
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/anothermartz/Easy-Wav2Lip/blob/v8.1/Easy_Wav2Lip_v8.1.ipynb)
 
-### For the easiest way to install locally on Windows 10 or 11, 64-Bit with a non-ARM processor and an NVIDIA GPU:
+访问 [Easy_Wav2Lip_v8.1.ipynb](https://colab.research.google.com/github/anothermartz/Easy-Wav2Lip/blob/v8.1/Easy_Wav2Lip_v8.1.ipynb)，只需运行 2 个代码单元格即可。
 
-1. Download [Easy-Wav2Lip.bat](https://github.com/anothermartz/Easy-Wav2Lip/releases/download/v8.1_release/Easy-Wav2Lip_v8.1.bat)
-2. Place it in a folder on your PC (EG: in Documents)
-3. Run it and follow the instructions.
+### 方式三：手动安装
 
-Make sure your Nvidia drivers are up to date or you may not have Cuda 12.
-
-[Easy-Wav2Lip.bat](https://github.com/anothermartz/Easy-Wav2Lip/releases/download/v8.1_release/Easy-Wav2Lip_v8.1.bat) will automatically check for and install the required software, download and install Easy-Wav2Lip, then run it in a loop of configuration and processing until you close it. It will also check for updates to Easy-Wav2Lip.
-
-_If anyone is able to convert Easy-Wav2Lip.bat to work on linux, it will very appreciated!_
-
-### For other configurations (untested!) or just to manually install:
-1. Make sure the following are installed and can be accessed via your terminal:
-      * Python (I have only tested 3.10.11 - other versions may not work!)
-      * Git
-      * ffmpeg, ffplay, ffprobe
-      * Visual Studio Build Tools C++ module
-      * Cuda (Just having the latest Nvidia drivers will do this, I have only tested 12.2)
-2. Run the following in your terminal:
-```
+```bash
+# 1. 克隆代码
 git clone https://github.com/anothermartz/Easy-Wav2Lip.git
 cd Easy-Wav2Lip
+
+# 2. 安装依赖
 pip install -r requirements.txt
+
+# 3. 安装模型
 python install.py
+
+# 4. 运行
+python run.py
+# 或循环运行模式
+./run_loop.sh     # Linux
+call run_loop.bat  # Windows
 ```
-Then:
-Linux:
-`./run_loop.sh`
 
-Windows:
-`call run_loop.bat`
+## 模型文件下载
 
-Please let me know if you have success running this on Linux, an AMD GPU or an ARM proessor and if you did or didn't do anything special to get it working.
+模型文件需单独下载，放到 `checkpoints/` 目录：
 
-## Usage:
-* Once everything is installed, a file called config.ini should pop up.
-* Add the path(s) to your video and audio files here and configure the settings to your liking.
-     * Pro Tip:
-     * On Windows Hold shift when right clicking on the file you want to use, then press "a" or click "copy as path" and that'll get the path that you can paste as video_file or vocal_file.
-       
-* Save config.ini and close it, this will start the Wav2Lip process and your file will be saved in the same directory as your video_path file.
-* config.ini will open again and you can change inputs and settings.
-* See [Advanced Tweaking](https://github.com/anothermartz/Easy-Wav2Lip/blob/v8/README.md#advanced-tweaking) below for the explanation of the settings not already explained in config.ini
+| 文件 | 说明 | 大小 | 下载地址 |
+|------|------|------|---------|
+| `Wav2Lip_GAN.pth` | GAN 版本（推荐） | ~200MB | [GitHub Releases](https://github.com/anothermartz/Easy-Wav2Lip/releases) |
+| `Wav2Lip.pth` | 原始版本 | ~200MB | 同上 |
+| `mobilenet.pth` | 人脸检测器 | ~14MB | 同上 |
+| `shape_predictor_68_face_landmarks.dat` | 68点人脸关键点 | ~100MB | [dlib-models](https://github.com/AKSHAYUBHAT/dlib-models) |
 
-# Credits:
-* [The Original Wav2Lip](https://github.com/Rudrabha/Wav2Lip) of course.
-* The huge speed increase and improved base quality comes from [cog-Wav2Lip](https://github.com/devxpy/cog-Wav2Lip).
-* Code to upscale with [GFPGAN](https://github.com/TencentARC/GFPGAN) mainly came from [wav2lip-hq-updated-ESRGAN](https://github.com/GucciFlipFlops1917/wav2lip-hq-updated-ESRGAN).
-* I couldn't have done this without AI assistance; Before making this I had very minimal python experience! LLM of choice: **Bing Chat.**
-* Thanks to [JustinJohn](https://github.com/justinjohn0306) for making the [Wav2Lip_simplified](https://colab.research.google.com/github/justinjohn0306/Wav2Lip/blob/master/Wav2Lip_simplified_v5.ipynb) colabs which inspired me to make my own, even simpler version.
+GFPGAN 增强模型（用于 Enhanced 质量模式）：
 
-# Support
-I've been offering some support in this discord:<br>
-Invite link: https://discord.gg/FNZR9ETwKY<br>
-Wav2Lip channel: https://discord.com/channels/667279414681272320/1076077584330280991
+| 文件 | 说明 | 下载地址 |
+|------|------|---------|
+| `GFPGANv1.4.pth` | 人脸修复权重 | [TencentARC/GFPGAN](https://github.com/TencentARC/GFPGAN/releases/download/v1.3.0/GFPGANv1.4.pth) |
 
-# Best practices:
-* The best results come from lining up the speech to the actions and expressions of the speaker before you send it through wav2lip!
+放入 `gfpgan/` 目录。
 
-Video files:
-* Must have a face in all frames or Wav2Lip will fail
-* Crop or mask out faces you don't want to lipsync or it'll choose randomly.
-* Use h264 .mp4 - other file types may be supported but this is what it outputs as
-* Images are currently untested.
-* Use a small file in every way (try <720p, <30 seconds, 30fps <b></b> etc. - Bigger files may work but are usually the reason it fails)
-* For your first try, use a really tiny clip just to get used to the process, only once you're familiar should you try bigger files to see if they work.
+## 快速开始
 
-Audio files:
-* Save as .wav and the same length as your input video.
-* NOTE: I've noticed that about 80ms gets cut from the processed video/audio and I'm not sure how to fix this, so make sure you have a little extra than what you actually need!
-* You can just encode it into your video file and leave vocal_path blank, but this will add a couple of seconds to the processing time as it splits the audio from the video
-* <b>OR</b>
-* Select your audio file separately
-* I'm not certain what filetypes are supported, at least .wav and .mp3 work.
+### 方式一：配置文件
 
-# Advanced Tweaking:
-## wav2lip_version:
-| Option | Pros | Cons |
-|:-------|:-----|:-----|
-| Wav2Lip | + More accurate lipsync <br> + Attempts to keep the mouth closed when there is no sound | - Sometimes produces missing teeth (uncommon) |
-| Wav2Lip_GAN | + Looks nicer <br> + Keeps the original expressions of the speaker more | - Not as good at masking the original lip movements, especially when there is no sound |
+1. 首次运行后会自动生成 `config.ini`
+2. 填写视频路径和音频路径：
 
-I suggest trying Wav2Lip first and switching to the GAN version if you experience an effect where it looks like the speaker has big gaps in their teeth.
+```ini
+[INPUT]
+video_file = C:\Videos\my_face.mp4
+vocal_file = C:\Audio\voice.wav
 
-### nosmooth:
-* When enabled, wav2lip will crop the face on each frame independently.
-  * Good for fast movements or cuts in the video.
-  * May cause twitching if the face is on a weird angle.
+[OUTPUT]
+output_height = 720
 
-* When disabled, wav2lip will blend the detected position of the face between 5 frames.
-  * Good for slow movements, especially for faces on an unusual angle.
-  * Mouth can be offset when the face moves within the frame quickly, looks horrible between cuts.
+[QUALITY]
+quality = Enhanced   ; Fast / Improved / Enhanced
+wav2lip_version = Wav2Lip_GAN  ; Wav2Lip / Wav2Lip_GAN
+```
 
-## Padding:
-This option controls how many pixels are added or removed from the face crop in each direction.
+3. 保存并关闭 `config.ini`，自动开始处理
 
-| Value | Example | Effect |
-|:------|:--------|:-------|
-| U | U = -10 | Removes 5 pixels from the top of the face |
-| D | D = 10 | Adds 10 pixels to the bottom of the face |
-| L | L = 0 | No change to the left of the face |
-| R | R = 15 | Adds 15 pixels to the right of the face |
+### 方式二：命令行参数
 
-Padding can help remove hard lines at the chin or other edges of the face, but too much or too little padding can change the size or position of the mouth. It's common practice to add 10 pixels to the bottom, but you should experiment with different values to find the best balance for your clip.
+```bash
+python run.py --video input.mp4 --audio voice.wav --quality Enhanced --output_height 720
+```
 
-## Mask:
-This option controls how the processed face is blended with the original face. This has no effect on the "Fast" quality option.
+### 方式三：Python API
 
-* **size** will increase the size of the area that the mask covers.
-* **feathering** determines the amount of blending between the centre of the mask and the edges.
-* **mouth_tracking** will update the position of the mask to where the mouth is on every frame (slower)
-*   * Note: The mouth position is already well approximated due to the frame being cropped to the face, enable this only if you find a video where the mask doesn't appear to follow the mouth.
-* **debug_mask** will make the background grayscale and the mask in colour so that you can easily see where the mask is in the frame.
+```python
+from inference import Wav2LipInference
 
-# Other options:
+inference = Wav2LipInference()
 
-# Batch processing:
-This option allows you to process multiple video and/or audio files automatically. 
-* Name your files with a number at the end, eg. Video1.mp4, Video2.mp4, etc. and put them all in the same folder.
-* Files will be processed in numerical order starting from the one you select. For example, if you select Video3.mp4, it will process Video3.mp4, Video4.mp4, and so on.
-* If you select numbered video files and a non-numbered audio file, it will process each video with the same audio file. Useful for making different images/videos say the same line.
-* Likewise, if you select a non-numbered video file and numbered audio files, it will use the same video for each audio file. Useful for making the same image/video say different things.
+# 单个文件处理
+result = inference.process(
+    video_path="input.mp4",
+    audio_path="voice.wav",
+    quality="Enhanced",
+    output_height=720
+)
 
-### output_suffix:
-This adds a suffix to your output files so that they don't overwite your originals.
+# 批量处理
+from pipeline import BatchProcessor
+processor = BatchProcessor()
+processor.process_batch(
+    video_dir="videos/",
+    audio_dir="audios/",
+    output_dir="output/"
+)
+```
 
-### include_settings_in_suffix:
-Adds what settings were used - good for comparing different settings as you will know what you used for each render.
-Will add: Qualty_resolution_nosmooth_pads-UDLR
-EG: _Enhanced_720_nosmooth1_pads-U15D10L-15R30
-pads_UDLR will not be included if they are set to 0.
-resolution will not be included if it output_height is set to full resolution
+## 配置参数详解
 
-### preview_input
-Displays the input video/audio before processing so you can check to make sure you chose the correct file(s). It may only work with .mp4, I just know it didn't work on an .avi I tried.
-Disabling this will save a few seconds of processing time for each video.
+### 质量模式
 
-### preview_settings
-This will render only 1 frame of your video and display it at full size, this is so you can tweak the settings without having to render the entire video each time.
-frame_to_preview is for selecting a particular frame you want to check out - may not be completely accurate to the actual frame.
+| 模式 | 说明 | 速度 | 画质 |
+|------|------|------|------|
+| Fast | 仅 Wav2Lip | 最快 | 一般 |
+| Improved | Wav2Lip + 羽化蒙版 |较快 | 较好 |
+| Enhanced | + GFPGAN 人脸增强 | 较慢 | **最佳** |
+
+### Wav2Lip 版本
+
+| 版本 | 优点 | 缺点 |
+|------|------|------|
+| Wav2Lip | 唇形同步更准确，能保持闭嘴状态 | 偶尔出现牙齿缺失 |
+| Wav2Lip_GAN | 视觉效果更好，保持原始表情 | 闭嘴遮罩效果略差 |
+
+### Padding（人脸边距）
+
+控制人脸裁剪区域的大小：
+
+| 参数 | 说明 | 示例 |
+|------|------|------|
+| U（上） | 负值减少，正值增加 | U = -10 → 裁剪顶部 5px |
+| D（下） | 增加底部边距 | D = 10 → 增加底部 10px |
+| L（左）/ R（右） | 控制左右边距 | 建议底部加 10px |
+
+### Mask（蒙版）
+
+| 参数 | 说明 |
+|------|------|
+| size | 蒙版覆盖区域大小 |
+| feathering | 蒙版边缘羽化程度 |
+| mouth_tracking | 实时跟踪嘴巴位置（更慢但更准） |
+| debug_mask | 显示蒙版调试视图 |
+
+### 其他选项
+
+| 参数 | 说明 |
+|------|------|
+| `nosmooth` | 禁用帧间平滑（适合快速运动画面） |
+| `batch_processing` | 批量处理多个文件 |
+| `output_suffix` | 输出文件后缀 |
+| `preview_input` | 处理前预览输入文件 |
+| `preview_settings` | 仅渲染 1 帧用于参数调试 |
+
+## 最佳实践
+
+### 视频要求
+
+- **必须**：画面中所有帧都包含人脸（否则会失败）
+- **建议**：720p 以下、30 秒以内、30fps
+- **避免**：侧脸、面部遮挡、多人画面（会随机选择一张脸）
+- **格式**：推荐 h264 编码的 MP4 文件
+
+### 音频要求
+
+- 推荐保存为 WAV 格式，时长与输入视频相同
+- 支持 MP3、WAV 等常见格式
+- **注意**：处理后视频会比原视频短约 80ms，建议音频稍长
+
+### 获取最佳效果
+
+- **预处理**：在唇形同步前，将语音与口型和表情对齐
+- **先小后大**：先用小片段测试参数，熟悉后再处理大文件
+- **素材选择**：选择正面、光线充足、表情自然的视频
+
+## 批量处理
+
+将文件按数字编号命名，放入同一文件夹：
+
+```
+videos/
+├── Video1.mp4
+├── Video2.mp4
+├── Video3.mp4
+└── ...
+```
+
+在 `config.ini` 中选择 `Video1.mp4`，程序会自动按顺序处理 Video1、Video2、Video3......
+
+也支持：一个视频 + 多个音频（同一视频说不同话），或多个视频 + 一个音频（不同人说同一句话）。
+
+## 与 DigitalHumanMVP 集成
+
+本项目作为 DigitalHumanMVP 的唇形同步引擎使用。在 DigitalHumanMVP 的 `config.yaml` 中配置：
+
+```yaml
+WAV2LIP_ROOT: "D:/hecheng/Easy-Wav2Lip"
+```
+
+## 常见问题
+
+### Q: 报错 "No face detected"
+
+确保视频中每帧都有清晰的人脸，避免侧脸、遮挡或多人。
+
+### Q: 显存不足（OOM）
+
+- 降低 `output_height`（如设为 480）
+- 使用 Fast 质量模式
+- 缩短视频时长
+
+### Q: 处理后嘴唇位置偏移
+
+调整 `Padding` 参数的 U/D/L/R 值，覆盖正确的人脸区域。
+
+### Q: 模型下载失败
+
+手动从 GitHub Releases 页面下载所有 `.pth` 文件，放入 `checkpoints/` 目录。
+
+## Credits
+
+- [The Original Wav2Lip](https://github.com/Rudrabha/Wav2Lip)
+- [cog-Wav2Lip](https://github.com/devxpy/cog-Wav2Lip)（速度优化）
+- [GFPGAN](https://github.com/TencentARC/GFPGAN)（人脸增强）
+- [wav2lip-hq-updated-ESRGAN](https://github.com/GucciFlipFlops1917/wav2lip-hq-updated-ESRGAN)
+
+## License
+
+MIT License
